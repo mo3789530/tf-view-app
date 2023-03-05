@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
+	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/terraform-json v0.15.0 // indirect
 	github.com/zclconf/go-cty v1.13.0 // indirect

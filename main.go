@@ -7,6 +7,9 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+
+	"github.com/go-chi/chi/v5"
 )
 
 //go:embed ui/build
@@ -26,11 +29,20 @@ func main() {
 }
 
 func startServer(ipPort string, frontendFS http.Handler) error {
-	m := http.NewServeMux()
-	server := http.Server{Addr: ipPort, Handler: m}
+	router := chi.NewRouter()
+	server := http.Server{Addr: ipPort, Handler: router}
 
-	m.Handle("/", frontendFS)
-	m.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	// for ui handler
+	// https://github.com/go-chi/chi/issues/403#issuecomment-468911337
+	router.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := os.Stat("ui/build" + r.RequestURI); os.IsNotExist(err) {
+			http.StripPrefix(r.RequestURI, frontendFS).ServeHTTP(w, r)
+		} else {
+			frontendFS.ServeHTTP(w, r)
+		}
+	})
+	// for health check api
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		// simple healthcheck
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
